@@ -1,0 +1,102 @@
+<head>
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="/jquery-ace/jquery/jquery-1.8.3.min.js"></script>
+    <script src="/jquery-ace/ace/ace.js"></script>
+    <script src="/jquery-ace/ace/theme-twilight.js"></script>
+    <script src="/jquery-ace/ace/mode-python.js"></script>
+    <script src="/jquery-ace/jquery-ace.min.js"></script>
+    <style type="text/css" media="screen">
+    #editor { 
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+</style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-md-12">
+            <br>
+            <h1>AISTLAB Online Compiler</h1></div>
+        <div class="col-md-12" style="background-color: #dedef8;box-shadow: inset 1px 1px 9px #444, inset -1px 1px 1px #444;">
+            <form>
+                <div class="form-group">
+                    <label>Languages : </label>
+                    <select class="form-control" name="langs" id="langs">
+                        <option>python</option>
+                        <option>javascript未完成</option>
+                        <option>c</option>
+                    </select>
+                    <label>Input : </label>
+                    <textarea class="form-control" name="code" id="textarea" rows="15">def test(): 
+    print 2**200 
+test()
+</textarea>
+                    <br>
+                    <input type="button" id="btn" value="Run" class="btn btn-primary btn-lg btn-block" />
+                </div>
+            </form>
+        </div>
+        <div class="col-md-12">
+            <label>output:</label>
+        </div>
+        <div class="col-md-12" style="background-color: #deaef8;box-shadow: inset 1px 1px 1px #444, inset 1px 1px 1px #444;">
+            <div class="form-group">
+                <textarea class="form-control" id="ans" cols="80" rows="5">hello world
+                </textarea>
+                <label id="state"></label>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#btn").click(function() {
+                var params = {
+                    langs: $("#langs").val(),
+                    code: $("#textarea").val()
+                };
+                $("#state").html("running...");
+                $.ajax({
+                    data: params,
+                    url: '/python',
+                    type: 'post',
+                    dataType: 'json',
+                    success: function(data) {
+                        var data = $.parseJSON(data);
+                        $("#ans").val(data.ans);
+                        $("#state").html("used:" + data.time + " ms");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('error ' + textStatus + " " + errorThrown);
+                    }
+                });
+            });
+            $("#langs").change(function() {
+                if ($("#langs").val() == "python") {
+                    //var editor = ace.edit("textarea");
+                    //editor.getSession().setValue("write your code here");
+                }
+                else if ($("#langs").val() == "c") {
+                }
+
+            });
+        });
+    </script>
+    <script>
+        $('#textarea').ace({
+            theme: 'twilight',
+            lang: 'python'
+        })
+    </script>
+</body>

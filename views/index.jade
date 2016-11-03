@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  form(method='post',action='/python')
+    input(id="langs",type="test",name="langs",list="langs")
+    datalist(id="langs")
+      option(value="python")
+      option(value="javascript")
+      option(value="c")
+    input(name="code",type="text")
+    input(name="load",type="submit",value="load")

@@ -1,0 +1,244 @@
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+    <script src="codemirror/lib/codemirror.js"></script>
+    <script src="codemirror/mode/python/python.js"></script>
+    <script src="codemirror/mode/clike/clike.js"></script>
+    <script src="codemirror/mode/shell/shell.js"></script>
+    
+    <script src="processing.min.js"></script>
+    <script id="myscript" type="application/processing" data-processing-target="pjs"></script>
+    <style>
+        .CodeMirror {
+            height: 40%;
+            font-size: 180%;
+            border: 1px solid #ddd;
+        }
+        
+        .CodeMirror-scroll {
+            max-height: auto;
+        }
+        
+        .CodeMirror pre {
+            padding-left: 7px;
+            line-height: 1.25;
+        }
+        
+        input[type=checkbox] {
+            -ms-transform: scale(2);
+            /* IE */
+            -moz-transform: scale(2);
+            /* FF */
+            -webkit-transform: scale(1);
+            /* Safari and Chrome */
+            -o-transform: scale(2);
+            /* Opera */
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <br>
+        <div class="col-md-12">
+            <div class="col-md-7">
+            <h1>AISTLAB Online Compiler v0.4</h1>
+            </div>
+            <div class="col-md-3">
+               <p>当前访问次数<img src="http://www.reliablecounter.com/count.php?page=compiler.aistlab.c9.io&digit=style/plain/18/&reloads=0" alt="" title="" border="0"> </p>
+            </div>
+            <div class="col-md-2">
+            <h1><a href="devlog.html">关于</a></h1>
+            </div>
+        </div>
+        <div class="col-md-12" style="background-color: #dedef8;box-shadow: inset 1px 1px 9px #444, inset -1px 1px 1px #444;">
+            <form>
+                <div class="form-group">
+                    <label>Languages : </label>
+                    <div class="col-md-12">
+                        <div class="col-md-5">
+                            <select class="form-control col-md-1 " name="langs" id="langs">
+                                <option>python</option>
+                                <option>processing</option>
+                                <option>java</option>
+                                <option>c</option>
+                                <option>cpp</option>
+                                <option>bash</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1" align="right">
+                            <input type="checkbox" id="showinfo">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="showinfo">
+                                Show Debug Info
+                            </label>
+                        </div>
+                    </div>
+                    <label>Input : </label>
+                    <textarea class="form-control" name="code" id="inputbox" rows="4" cols="10"></textarea>
+                    <br>
+                    <input type="button" id="btn" value="Run Code" class="btn btn-primary btn-lg btn-block" />
+                </div>
+            </form>
+        </div>
+        <div class="col-md-12">
+        </div>
+        <div class="col-md-12" style="background-color: #deaef8;box-shadow: inset 1px 1px 1px #444, inset 1px 1px 1px #444;">
+            <div class="form-group">
+                <label>output:</label>
+                <textarea class="form-control" id="ans" cols="80" rows="8" style="overflow-y: scroll;">hello world</textarea>
+                <label id="state"></label>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4"> 
+                <address>XHU,Chengdu,China(610039)</address>
+            </div>
+            <div class="col-md-4"> 
+                <footer align="center">AISTLAB &copy 2015</footer>
+            </div>
+            <div class="col-md-4"> 
+                书山有路勤为径，学海无涯乐作舟。
+            </div>
+        </div>
+        <canvas id="pjs"> </canvas>
+    </div>
+    
+
+    <script type="text/javascript">
+        $(function() {
+            var editor = CodeMirror.fromTextArea(document.getElementById("inputbox"), {
+                mode: {
+                    name: "python",
+                    version: 3,
+                    singleLineStringErrors: false,
+                },
+                lineNumbers: true,
+                indentUnit: 4,
+                matchBrackets: true
+            });
+            editor.setValue('print ("2^1000=%d"%2**1000)');
+            $("#btn").click(function() {
+                var params = {
+                    langs: $("#langs").val(),
+                    code: editor.getValue(),
+                    detail: $("#showinfo").is(':checked'),
+                };
+                if($("#langs").val()=="processing")
+                {
+                    $("#myscript").html(editor.getValue());
+                    return;
+                }
+                $("#state").html("running...");
+                $.ajax({
+                    data: params,
+                    url: '/compiler',
+                    type: 'post',
+                    dataType: 'json',
+                    success: function(data) {
+                        var data = $.parseJSON(data);
+                        $("#ans").val(data.ans);
+                        $("#state").html("used:" + data.time + " ms");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('error ' + textStatus + " " + errorThrown);
+                    }
+                });
+            });
+            $("#langs").change(function() {
+                if ($("#langs").val() == "python") {
+                    editor.setOption("mode", {
+                        name: "python",
+                        version: 3,
+                        singleLineStringErrors: false
+                    });
+
+                    editor.setValue("\
+#aistlab online compiler python 2 demo\n\
+def test():\n\
+    print 2**1000\n\
+test()\n");
+                }
+                else if ($("#langs").val() == "c") {
+                    editor.setOption("mode", {
+                        name: "text/x-csrc"
+                    });
+                    editor.refresh();
+                    editor.setValue('\
+//aistlab online compiler c demo\n\
+#include <stdio.h>\n\
+int main()\n\
+{\n\
+    printf("hello aistlab c compiler!");\n\
+    return 0;\n\
+}\n');
+                }
+                else if($("#langs").val() == "java") {
+                    editor.setOption("mode", {
+                        name: "text/x-java"
+                    });
+                    editor.refresh();
+                    editor.setValue('\
+//aistlab online compiler java demo\n\
+//please do not change public class name\n\
+public class test {\n\
+    public static void main(String[] args){\n\
+        System.out.println("hello java");\n\
+    }\n\
+}\n');          
+                }  
+                else if($("#langs").val() == "processing") {
+                    editor.setOption("mode", {
+                        name: "text/x-java"
+                    });
+                    editor.refresh();
+                    editor.setValue('\
+//aistlab online compiler processing demo\n\
+void setup() {\n\
+    size(400,400);\n\
+    background(100);\n\
+    println("hello");\n\
+    }\n\
+void draw(){\n\
+    background(0);\n\
+}\n');          
+                } 
+                else if($("#langs").val() == "cpp") {
+                    editor.setOption("mode", {
+                        name: "text/x-c++src"
+                    });
+                    editor.refresh();
+                    editor.setValue('\
+//aistlab online compiler cpp demo\n\
+#include <iostream>\n\
+using namespace std;\n\
+int main()\n\
+{\n\
+    cout<<"hello aistlab g++ compiler!"<<endl;\n\
+    return 0;\n\
+}\n');                    
+                }
+                else if($("#langs").val() == "bash") {
+                    editor.setOption("mode", {
+                        name: "shell"
+                    });
+                    editor.refresh();
+                    editor.setValue('\
+#!/bin/bash\n\
+cat /proc/cpuinfo\n\
+echo hello bash\n');                    
+                }
+            });
+        });
+    </script>
+
+
+</body>
